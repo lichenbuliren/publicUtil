@@ -50,7 +50,7 @@ module.exports = function(app) {
 		var contents = querystring.stringify({
 			"id" : 129
 		});
-		
+
 		//post信息
 		var options = {
 			host: "marketing.hai0.com",
@@ -86,7 +86,7 @@ module.exports = function(app) {
 			console.log(e.message);
 		});
 	});
-	
+
 
 	//upyun文件上传
 	app.post('/', function(req, res) {
@@ -120,7 +120,7 @@ module.exports = function(app) {
 		res.redirect('/');
 	});
 
-	
+
 	app.post("/multipartUpload",function(req,res){
 		var upyun = new UPYun(config.CLOUD_BUCKET_IMG, config.CLOUD_USER, config.CLOUD_PWD);
 		for (var i in req.files) {
