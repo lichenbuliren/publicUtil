@@ -1,0 +1,9 @@
+<%- include header.html %>
+<% if(responseData){%>
+<% responseData.data.forEach(function(groups,index){%>
+	<div><%= groups.id %></div>
+<%})%>
+<%}else{%>
+	<div>没有数据</div>
+<%}%>
+<%- include footer.html %>

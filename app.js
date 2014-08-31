@@ -16,7 +16,9 @@ var app = express();
 // all environments
 app.set('port', process.env.PORT || 3000);
 app.set('views', path.join(__dirname, 'views'));
-app.set('view engine', 'ejs');
+//改变默认模板后缀
+app.engine('.html', require("ejs").__express);
+app.set('view engine', 'html');// app.set('view engine', 'ejs');
 app.use(flash());
 //设置默认的图标，如果要改为自己的
 // app.use(express.favicon(__dirname + '/public/images/favicon.ico'));
@@ -39,6 +41,7 @@ app.use(express.session({
 }));
 app.use(app.router);
 app.use(express.static(path.join(__dirname, 'public')));
+console.log("static path:" + __dirname + "\\" +"public");
 
 // development only
 if ('development' == app.get('env')) {

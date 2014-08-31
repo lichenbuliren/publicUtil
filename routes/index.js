@@ -71,16 +71,23 @@ module.exports = function(app) {
 			res.setEncoding("utf8");
 			console.log("statusCode:" + res.statusCode);
 			res.on('data',function(chunk){
-				console.log("chunk:===========" + chunk);
 				result.push(chunk);
 			}).on("end",function(){
-				var content = serverResponse.render('index',{
+				//res.render如果设置了回调函数，则默认没有回应
+				serverResponse.render('test',{
 					responseData: JSON.parse(result.toString()),
 					success: req.flash('success').toString(),
 					error: req.flash('error').toString()
+				},function(err,html){
+					if(err){
+						console.log("err : " + err);
+						serverResponse.send(500,err);
+					}
+					fs.writeFile('index.html', html,{"encoding":"utf8"},function(res){
+						console.log("files writed ");
+						serverResponse.send(200,html);
+					});
 				});
-				console.log(content);
-				fs.writeFileSync('index.html', content);
 			});
 		}).on("error",function(e){
 			console.log(e.message);
