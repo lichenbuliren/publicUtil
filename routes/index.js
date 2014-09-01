@@ -4,8 +4,10 @@
 //crypto 是 Node.js 的一个核心模块，我们用它生成散列值来加密密码。
 var crypto = require('crypto');
 var util = require('util');
+var path = require("path");
+var http = require("http");
 var fs = require('fs'); //文件操作模块
-var http = require('http');
+var Connection = require('ssh2'); //ssh2模块
 var querystring = require('querystring');
 //日期工具类
 var commonUtil = require("../models/commonUtil.js");
@@ -23,11 +25,11 @@ module.exports = function(app) {
 		});
 	});
 
-	app.get('/test',function(req,res){
+	app.get('/test', function(req, res) {
 		var serverResponse = res;
 		//要发送的post数据
 		var contents = querystring.stringify({
-			"id" : 100
+			"id": 100
 		});
 
 		//post信息
@@ -42,42 +44,73 @@ module.exports = function(app) {
 				'Content-Length': contents.length
 			}
 		};
-		var getUrl = "http://marketing.xxxxx.com/api/v1/marketing_active.get_active_by_id?id=124";
+		var getUrl = "http://marketing.hai0.com/api/v1/marketing_active.get_active_by_id?id=124";
 		var result = [];
 		var responseData = {};
 		//发起请求
-		var reqGet  = http.get(getUrl,function(res){
+		var reqGet = http.get(getUrl, function(res) {
 			res.setEncoding("utf8");
 			console.log("statusCode:" + res.statusCode);
-			res.on('data',function(chunk){
+			res.on('data', function(chunk) {
 				result.push(chunk);
-			}).on("end",function(){
+			}).on("end", function() {
 				//result.data[0].goods_items[0]
 				var responseResult = JSON.parse(result.join(''));
 				//res.render如果设置了回调函数，则默认没有回应
-				serverResponse.render('saleTemplate',{
+				serverResponse.render('saleTemplate', {
 					data: responseResult.data[0]
-				},function(err,html){
-					if(err){
+				}, function(err, html) {
+					if (err) {
 						console.log("err : " + err);
-						serverResponse.send(500,err);
+						serverResponse.send(500, err);
 					}
-					fs.writeFile(commonUtil.formatDate('yyyy-MM-dd')+'-sale.html', html,function(res){
+					console.log("username:  " + config.FTP_USER);
+
+					var fileName = commonUtil.formatDate('yyyy-MM-dd') + '-sale.html';
+					fs.writeFile(fileName, html, function(res) {
 						console.log("files writed ");
-						serverResponse.send(200,html);
+						serverResponse.send(200, html);
+						//开启sftp服务
+						var conn = new Connection();
+						conn.on('ready', function() {
+							console.log('Connection :: ready');
+							conn.sftp(function(err, sftp) {
+								if (err) throw err;
+								// sftp.readdir('/var/www/act.hai360.com', function(err, list) {
+								// 	if (err) throw err;
+								// 	console.dir(list);
+								// 	conn.end();
+								// });
+								var localFilePath = path.join(path.dirname(__dirname),fileName);
+								console.log("localFilePath:===" + localFilePath);
+								sftp.fastPut(localFilePath,"/var/www/act.hai360.com/201409/demo.html",{},function(err){
+									if(err){
+										console.dir(err);
+										return;
+									}
+									console.log("文件上传成功");
+									conn.end();
+								});
+							});
+						}).connect({
+							host: config.FTP_HOST,
+							port: 22,
+							username: config.FTP_USER,
+							password: config.FTP_PASS
+						});
 					});
 				});
 			});
-		}).on("error",function(e){
+		}).on("error", function(e) {
 			console.log(e.message);
 		});
 	});
 	//读取测试文件
-	app.get("/test2",function(req,res){
+	app.get("/test2", function(req, res) {
 		var dataFile = __dirname + "/data.json";
 		console.log(dataFile);
-		fs.readFile(dataFile,"utf-8",function(err,data){
-			if(err){
+		fs.readFile(dataFile, "utf-8", function(err, data) {
+			if (err) {
 				console.log(err);
 				return;
 			}
@@ -105,12 +138,12 @@ module.exports = function(app) {
 					upyun.setContentMD5(md5Str);
 					upyun.setFileSecret('bac');
 				 */
-				console.log("====================="  + util.inspect(req.files[i].path));
-				var fileContent =  fs.readFileSync(req.files[i].path);
+				console.log("=====================" + util.inspect(req.files[i].path));
+				var fileContent = fs.readFileSync(req.files[i].path);
 				var md5Str = md5(fileContent);
 				upyun.setContentMD5(md5Str);
 				// console.log("保存路径：" + config.CLOUD_PIC_PATH+req.files[i].name+"==========文件内容：" + util.inspect(fileContent));
-				upyun.writeFile(config.CLOUD_PIC_PATH+req.files[i].name, fileContent, true, testCallback);
+				upyun.writeFile(config.CLOUD_PIC_PATH + req.files[i].name, fileContent, true, testCallback);
 				var target_path = './public/img/' + req.files[i].name;
 				fs.renameSync(req.files[i].path, target_path);
 			}
@@ -120,7 +153,7 @@ module.exports = function(app) {
 	});
 
 
-	app.post("/multipartUpload",function(req,res){
+	app.post("/multipartUpload", function(req, res) {
 		var upyun = new UPYun(config.CLOUD_BUCKET_IMG, config.CLOUD_USER, config.CLOUD_PWD);
 		for (var i in req.files) {
 			if (req.files[i].size == 0) {
@@ -139,7 +172,7 @@ module.exports = function(app) {
 		res.redirect('/');
 	});
 
-	function testCallback(err,data){
+	function testCallback(err, data) {
 		if (!err) {
 			console.log('Data: ' + data);
 		} else {
