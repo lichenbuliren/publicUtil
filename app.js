@@ -41,7 +41,6 @@ app.use(express.session({
 }));
 app.use(app.router);
 app.use(express.static(path.join(__dirname, 'public')));
-console.log("static path:" + __dirname + "\\" +"public");
 
 // development only
 if ('development' == app.get('env')) {

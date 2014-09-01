@@ -1,0 +1,58 @@
+<%- include saleHeader.html %>
+<div class="banner"><img src="<%= data.active_img_url %>" style="height:360px;"/></div>
+<div class="container" style="padding: 30px 0;font:normal 16px/1.8em '\5fae\8f6f\96c5\9ed1';">
+    <strong style="color: #0082c0;">【小编导语】</strong>
+    <span id="guide"><%= data.active_info %></span>
+</div>
+<!-- S 主体内容-->
+<div class="floor-wrapper" id="floor">
+	<!--S 商品列表模版-->
+	<% data.goods_items.forEach(function(item,i){%>
+		<div class="floor floor-<%= (i +1) %>">
+			<div class="container">
+				<ul class="mod-list">
+					<% item.goods_info.forEach(function(info,j){%>
+					<%
+						var url = 'http://www.hai360.com/item-' + info.goods_id + '.html';
+						var d = info.goods_detail;
+					%>
+					<li class="list-item list-item-<%= j+1%>">
+						<a href="<%= url %>" class="pic" target="_blank">
+							<img src="<%= d.paiyunimg%>" width="186" height="186" />
+						</a>
+						<a href="<%= url %>" class="name" title="<%= d.name %>" target="_blank"><%= d.name %>	</a>
+						<span class="price">
+							<span class="unit"><%= d.currency_symbol %></span><%= d.sell_price %>
+						</span>
+						<span class="price-rmb">&yen; <%= d.sell_price_rmb %></span>
+						<del class="price-other">&yen; <%= info.market_price_rmb %></del>
+						<a href="<%= url %>" class="btn" target="_blank">立即购买<i class="arrow">&gt;</i></a>
+					</li>
+					<%})%>
+				</ul>
+			</div>
+		</div>
+	<%})%>
+	
+	<!--E 商品列表模版-->
+</div>
+<!-- E 主体内容-->
+
+<div class="container" style="background-color: #fff;">
+    <a href="http://www.6pm.com/nike-nike-kids~1" target="_blank"><img src="http://img.thcdn.cn/upload/201408/more-coach.jpg" alt=""></a>
+</div>
+
+<div class="bottomshow">
+    <ul>
+        <li><a href="http://act.hai360.com/act/act20140712a.html?htag=actbottomf"><img src="http://act.hai360.com/pic/201407coudan.jpg" width="470" height="188" border="0" /></a></li>
+        <li><a href="http://act.hai360.com/act/act20140715a.html?htag=actbottom"><img src="http://act.hai360.com/pic/201407baojian.jpg" width="470" height="188" border="0" /></a></li>
+    </ul>
+</div>
+
+<div class="container" style="margin: 10px auto;">
+    <div class="yjg"><a href="http://go.hai360.com/" target="_blank"><img src="http://act.hai360.com/pic/yjg.jpg" width="1000" height="128"></a></div>
+    <div class="best1"><a href="http://act.hai360.com/201405/vip" target="_blank"><img src="http://act.hai360.com/pic/bestservice1.jpg" width="999" height="283"></a></div>
+    <div class="best2"><a href="http://act.hai360.com/201405/vip" target="_blank"><img src="http://act.hai360.com/pic/bestservice2.jpg" width="999" height="216"></a></div>
+</div>
+<!--<%= data.page_js%>-->
+<%- include saleFooter.html %>

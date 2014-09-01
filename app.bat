@@ -1,1 +1,1 @@
-nodemon E:\studyResources\publicUtil\app
+nodemon E:\studyResources\myGithub\publicUtil\app
