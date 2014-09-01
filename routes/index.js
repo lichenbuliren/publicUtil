@@ -32,7 +32,7 @@ module.exports = function(app) {
 
 		//post信息
 		var options = {
-			host: "marketing.hai0.com",
+			host: "marketing.xxxxx.com",
 			//默认
 			port: 80,
 			path: "/api/v1/marketing_active.get_active_by_id?id=127",
@@ -42,7 +42,7 @@ module.exports = function(app) {
 				'Content-Length': contents.length
 			}
 		};
-		var getUrl = "http://marketing.hai0.com/api/v1/marketing_active.get_active_by_id?id=124";
+		var getUrl = "http://marketing.xxxxx.com/api/v1/marketing_active.get_active_by_id?id=124";
 		var result = [];
 		var responseData = {};
 		//发起请求

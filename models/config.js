@@ -4,12 +4,12 @@
 var commonUtil = require('./commonUtil.js');
 
 var Config = {
-	CLOUD_PIC_HOST: 'http://uimg.hai360.com',
+	CLOUD_PIC_HOST: 'http://uimg.xxxx.com',
 	CLOUD_PIC_PATH: '/upload/'+ commonUtil.formatDate('yyyy-MM-dd')+'/',
-	CLOUD_FILE_PATH: 'http://htfiles.b0.upaiyun.com',
-	CLOUD_BUCKET_IMG: 'hai360',
-	CLOUD_BUCKET_FILE: 'htfiles',
-	CLOUD_USER: 'taohai',
-	CLOUD_PWD: 'taohai@2013'
+	CLOUD_FILE_PATH: 'http://xxxx.b0.upaiyun.com',
+	CLOUD_BUCKET_IMG: 'xxxxx',
+	CLOUD_BUCKET_FILE: 'xxxx',
+	CLOUD_USER: 'xxxxx',
+	CLOUD_PWD: 'xxxxxxxx'
 }
 module.exports = Config;
