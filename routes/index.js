@@ -16,6 +16,8 @@ var config = require('../models/config.js');
 var UPYun = require('../models/upyun').UPYun;
 //卖场对象
 var Active = require('../models/active.js');
+//工具类
+var helper = require('../models/helper.js');
 
 module.exports = function(app) {
 	app.get('/', function(req, res) {
@@ -44,7 +46,6 @@ module.exports = function(app) {
 			data = JSON.parse(data).data[0];
 			//给页面返回自定义css与js样式脚本
 			data.page_css = act.page_css;
-			console.log(data.page_css);
 			data.page_js = act.page_js;
 			//设置活动标题
 			act.title = data.active_name;
@@ -56,24 +57,32 @@ module.exports = function(app) {
 					res.send(500,err);
 				}
 				//生成活动名称
-				var fileName = generalActName(act.act_id) + ".html",
+				var fileName = helper.generalActName(act.act_id) + ".html",
 					localFilePath = path.join(path.dirname(__dirname),'publish',fileName);
 				//保存活动页面到本地路径
 				fs.writeFile(localFilePath,html,function(err){
 					if(err) throw err;
-					// res.send(200, html);
-					//开启sftp服务,保存文件到远程服务器
-					sftpFastPut(fileName,localFilePath,function(err,actDir){
+					/**
+					 * 首先判断需要写入文件的目录是否存在
+					 * 如果存在，则直接写入，如果不存在则，建立目录
+					*/
+					var actDir  = commonUtil.formatDate('yyyyMM');
+					//远程ftp路径
+					var remoteFilePath = config.FTP_PATH + "/" + actDir +"/";
+					helper.sftpFastPut(fileName,localFilePath,remoteFilePath,function(err){
 						if(err) throw err;
-						//保存数据到数据库
-						act.page_url = config.ACTIVE_HOST + actDir + "/" + fileName;
+						//删除本地文件
+						fs.unlinkSync(localFilePath);
+						//活动url
+						act.page_url = config.ACTIVE_HOST + actDir + '/' + fileName;
 						//构建一个活动对象
 						var active = new Active(act);
 						active.save(function(err){
-							if(err) {
-								return res.redirect("/");
-							};
-							console.log("数据保存成功");
+							if(err){
+								console.log(err);
+								return res.redirect('/');
+							}
+							console.log('数据保存成功');
 							res.redirect(act.page_url);
 						});
 					});
@@ -81,65 +90,6 @@ module.exports = function(app) {
 			});
 		});
 	});
-	
-	//sftp文件上传
-	function sftpFastPut(fileName,localFilePath,callback){
-		var conn = new Connection();
-		conn.on('ready', function() {
-			console.log('Connection :: ready');
-			conn.sftp(function(err, sftp) {
-				if (err){
-					conn.end();
-					console.log(err);
-					return callback(err);
-				};
-				/**
-				 * 首先判断需要写入文件的目录是否存在
-				 * 如果存在，则直接写入，如果不存在则，建立目录
-				 */
-				var actDir  = commonUtil.formatDate('yyyyMM');
-				var saveDirectory = config.FTP_PATH + "/" + actDir +"/";
-				//读取目录属性
-				sftp.stat(saveDirectory,function(err,stat){
-					if(err) {//不存在当前路径，则新建一个目录
-						sftp.mkdir(saveDirectory,function(err){
-							if(err){
-								conn.end();
-								console.log(err);
-								return callback(err);
-							};
-							sftp.fastPut(localFilePath,saveDirectory + fileName,function(err){
-								if(err) {
-									conn.end();
-									console.log(err);
-									callback(err);
-								}
-								console.log("文件上传成功");
-								conn.end();
-								return callback(null,actDir);
-							});
-						});
-					}
-					sftp.fastPut(localFilePath,saveDirectory + fileName,function(err){
-						if(err) {
-							conn.end();
-							console.log(err);
-							return callback(err);
-						}
-						console.log("文件上传成功");
-						conn.end();
-						return callback(null,actDir);
-					});
-				});
-			});
-		}).connect({
-			host: config.FTP_HOST,
-			port: 22,
-			username: config.FTP_USER,
-			password: config.FTP_PASS
-		});
-	}
-
 
 	//发送http get请求
 	function doGet(url,callback){
@@ -156,13 +106,6 @@ module.exports = function(app) {
 			return callback(e.message);
 		});
 	}
-
-	function generalActName(act_id){
-		var md5 = crypto.createHash('md5'),
-			md5ActId = md5.update(act_id).digest('hex');
-		return act_id + md5ActId.substr(-5);
-	}
-
 
 	app.get('/test', function(req, res) {
 		var serverResponse = res;
@@ -299,13 +242,6 @@ module.exports = function(app) {
 		} else {
 			console.log('Error: ' + util.inspect(err));
 		}
-	}
-
-	function md5(string) {
-		var crypto = require('crypto');
-		var md5sum = crypto.createHash('md5');
-		md5sum.update(string, 'utf8');
-		return md5sum.digest('hex');
 	}
 
 
