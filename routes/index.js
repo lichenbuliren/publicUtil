@@ -14,10 +14,9 @@ var commonUtil = require("../models/commonUtil.js");
 //配置文件信息对象
 var config = require('../models/config.js');
 var UPYun = require('../models/upyun').UPYun;
+//卖场对象
+var Active = require('../models/active.js');
 
-// exports.index = function(req, res){
-//   res.render('index', { title: 'Express' });
-// };
 module.exports = function(app) {
 	app.get('/', function(req, res) {
 		res.render('index', {
@@ -25,32 +24,155 @@ module.exports = function(app) {
 		});
 	});
 
+	//发布活动
+	app.post("/publish",function(req,res){
+		var act = {
+			act_id : req.body.act_id,
+			templateId : req.body.templateId,
+			page_css : commonUtil.trim(req.body.page_css),
+			page_js : commonUtil.trim(req.body.page_js)
+		}
+		//title,page_url需要后面获取
+		//var getUrl = "http://marketing.hai0.com/api/v1/marketing_active.get_active_by_id?id=124";
+		var api_url = "http://" + config.API_HOST + config.API_PATH + "?id=" + act.act_id;
+		//发送get请求
+		doGet(api_url,function(err,data){
+			if(err){
+				console.log(err);
+				return;
+			}
+			data = JSON.parse(data).data[0];
+			//给页面返回自定义css与js样式脚本
+			data.page_css = act.page_css;
+			console.log(data.page_css);
+			data.page_js = act.page_js;
+			//设置活动标题
+			act.title = data.active_name;
+			res.render(act.templateId,{
+				data: data
+			},function(err,html){
+				if(err){
+					console.log("err==============" + err);
+					res.send(500,err);
+				}
+				//生成活动名称
+				var fileName = generalActName(act.act_id) + ".html",
+					localFilePath = path.join(path.dirname(__dirname),'publish',fileName);
+				//保存活动页面到本地路径
+				fs.writeFile(localFilePath,html,function(err){
+					if(err) throw err;
+					// res.send(200, html);
+					//开启sftp服务,保存文件到远程服务器
+					sftpFastPut(fileName,localFilePath,function(err,actDir){
+						if(err) throw err;
+						//保存数据到数据库
+						act.page_url = config.ACTIVE_HOST + actDir + "/" + fileName;
+						//构建一个活动对象
+						var active = new Active(act);
+						active.save(function(err){
+							if(err) {
+								return res.redirect("/");
+							};
+							console.log("数据保存成功");
+							res.redirect(act.page_url);
+						});
+					});
+				});
+			});
+		});
+	});
+	
+	//sftp文件上传
+	function sftpFastPut(fileName,localFilePath,callback){
+		var conn = new Connection();
+		conn.on('ready', function() {
+			console.log('Connection :: ready');
+			conn.sftp(function(err, sftp) {
+				if (err){
+					conn.end();
+					console.log(err);
+					return callback(err);
+				};
+				/**
+				 * 首先判断需要写入文件的目录是否存在
+				 * 如果存在，则直接写入，如果不存在则，建立目录
+				 */
+				var actDir  = commonUtil.formatDate('yyyyMM');
+				var saveDirectory = config.FTP_PATH + "/" + actDir +"/";
+				//读取目录属性
+				sftp.stat(saveDirectory,function(err,stat){
+					if(err) {//不存在当前路径，则新建一个目录
+						sftp.mkdir(saveDirectory,function(err){
+							if(err){
+								conn.end();
+								console.log(err);
+								return callback(err);
+							};
+							sftp.fastPut(localFilePath,saveDirectory + fileName,function(err){
+								if(err) {
+									conn.end();
+									console.log(err);
+									callback(err);
+								}
+								console.log("文件上传成功");
+								conn.end();
+								return callback(null,actDir);
+							});
+						});
+					}
+					sftp.fastPut(localFilePath,saveDirectory + fileName,function(err){
+						if(err) {
+							conn.end();
+							console.log(err);
+							return callback(err);
+						}
+						console.log("文件上传成功");
+						conn.end();
+						return callback(null,actDir);
+					});
+				});
+			});
+		}).connect({
+			host: config.FTP_HOST,
+			port: 22,
+			username: config.FTP_USER,
+			password: config.FTP_PASS
+		});
+	}
+
+
+	//发送http get请求
+	function doGet(url,callback){
+		var data = [];
+		http.get(url,function(res){
+			res.setEncoding("utf8");
+			res.on("data",function(chunk){
+				data.push(chunk);
+			}).on("end",function(){
+				return callback(null,data.join(''));
+			});
+		}).on("error",function(e){
+			console.log("err============" + e.message);
+			return callback(e.message);
+		});
+	}
+
+	function generalActName(act_id){
+		var md5 = crypto.createHash('md5'),
+			md5ActId = md5.update(act_id).digest('hex');
+		return act_id + md5ActId.substr(-5);
+	}
+
+
 	app.get('/test', function(req, res) {
 		var serverResponse = res;
 		//要发送的post数据
-		var contents = querystring.stringify({
-			"id": 100
-		});
-
-		//post信息
-		var options = {
-			host: "marketing.xxxxx.com",
-			//默认
-			port: 80,
-			path: "/api/v1/marketing_active.get_active_by_id?id=127",
-			method: "GET",
-			headers: {
-				'Content-Type': 'application/json',
-				'Content-Length': contents.length
-			}
-		};
 		var getUrl = "http://marketing.hai0.com/api/v1/marketing_active.get_active_by_id?id=124";
 		var result = [];
 		var responseData = {};
 		//发起请求
 		var reqGet = http.get(getUrl, function(res) {
 			res.setEncoding("utf8");
-			console.log("statusCode:" + res.statusCode);
 			res.on('data', function(chunk) {
 				result.push(chunk);
 			}).on("end", function() {
@@ -64,10 +186,9 @@ module.exports = function(app) {
 						console.log("err : " + err);
 						serverResponse.send(500, err);
 					}
-					console.log("username:  " + config.FTP_USER);
-
 					var fileName = commonUtil.formatDate('yyyy-MM-dd') + '-sale.html';
-					fs.writeFile(fileName, html, function(res) {
+					fs.writeFile(fileName, html, function(err) {
+						if(err) throw err;
 						console.log("files writed ");
 						serverResponse.send(200, html);
 						//开启sftp服务

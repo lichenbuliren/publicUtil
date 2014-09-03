@@ -1,5 +1,6 @@
 module.exports = {
-   cookieSecret: 'publicUtil',
-   db: 'acts',
+   cookieSecret: 'marketing',
+   //数据库名称
+   db: 'marketing',
    host: 'localhost'
 };

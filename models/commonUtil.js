@@ -27,6 +27,21 @@ var CommonUtil = {
 		str = str.replace(/ss|SS/, date.getSeconds() > 9 ? date.getSeconds().toString() : '0' + date.getSeconds());
 		str = str.replace(/s|S/g, date.getSeconds());
 		return str
+	},
+
+	//原生JavaScript转义html标签
+	HtmlEncode : function(text) {
+	    return text.replace(/&/g, '&amp').replace(/\"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+	},
+
+	//原生JavaScript还原html标签
+	HtmlDecode : function(text) {
+	    return text.replace(/&amp;/g, '&').replace(/&quot;/g, '\"').replace(/&lt;/g, '<').replace(/&gt;/g, '>')
+	},
+	
+	//清除两边空格
+	trim : function(text){
+		return text.replace(/(^\s*)|(\s*$)/g, "");
 	}
 }
 

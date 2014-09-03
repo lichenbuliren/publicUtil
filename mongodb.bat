@@ -1,1 +1,1 @@
-mongod --dbpath "D:\Program Files\mongodb\publicUtil"
+mongod --dbpath "D:\Program Files\mongodb\marketing"
