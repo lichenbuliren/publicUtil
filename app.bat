@@ -1,1 +1,1 @@
-nodemon E:\studyResources\myGithub\publicUtil\app
+nodemon E:\workspace\th_hai0_project\trunk\marketing.hai0.com\tools\marketing\app

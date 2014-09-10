@@ -1,0 +1,16 @@
+<script src="http://s.thcdn.cn/www/js/act/marketing.js"></script>
+<script>
+	$(function() {
+		//图片等比例缩放
+		var $imgs = $('.list-item .pic img');
+		$('.list-item .pic img').each(function(index, el) {
+			 var img = this, w = img.width, h = img.height;
+                    FX.imgResize(img, w, h);
+                    $(img).removeAttr('width').removeAttr('height');
+		});
+	});
+</script>
+<%if(data.page_js){%><%- data.page_js %><%}%>
+<script src="http://s.thcdn.cn/www/js/act/footer.js"></script>
+</body>
+</html>

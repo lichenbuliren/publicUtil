@@ -7,8 +7,8 @@ var mongodb = require("./db"),
 function Active(active){
 	this.act_id = active.act_id;
 	this.templateId = active.templateId;
-	this.page_css = active.page_css;
-	this.page_js = active.page_js;
+	this.page_css = active.page_css || "";
+	this.page_js = active.page_js || "";
 	this.title = active.title;
 	this.page_url = active.page_url;
 }

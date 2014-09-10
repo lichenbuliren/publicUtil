@@ -36,7 +36,10 @@ app.use(express.session({
 	key: settings.db,
 	cookie:{maxAge: 1000*60*60*24*30},//30 days
 	store: new MongoStore({
-		db: settings.db
+		db: settings.db,
+		host: settings.host,
+		username:settings.username,
+		password: settings.password
 	})
 }));
 app.use(app.router);
@@ -47,10 +50,8 @@ if ('development' == app.get('env')) {
   app.use(express.errorHandler());
 }
 
-// app.get('/', routes.index);
-// app.get('/users', user.list);
 routes(app);
 
 http.createServer(app).listen(app.get('port'), function(){
-  console.log('publicUtil server listening on port ' + app.get('port'));
+  console.log('marketing server listening on port ' + app.get('port'));
 });

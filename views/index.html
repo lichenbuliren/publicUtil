@@ -3,9 +3,7 @@
 <head>
 	<meta charset="UTF-8">
 	<meta http-equiv="X-UA-Compatible" content="IE=Edge">
-	<title>
-			管理平台 - 淘海科技
-	</title>
+	<title>管理平台 - 淘海科技</title>
 	<link rel="stylesheet" href="http://marketing.hai0.com/assets/css/1.0.1/global/global.s.css">
 	<style>
 		#form .well {padding: 10px 10px;}
@@ -25,8 +23,8 @@
 			</div>
 			<nav class="collapse navbar-collapse bs-navbar-collapse">
 				<ul class="nav navbar-nav">
-					<li>	<a href="/">运营系统</a></li>
-					<li class="active"><a href="/">运营工具</a></li>
+					<li>	<a href="http://marketing.hai0.com/" target="_blank">运营系统</a></li>
+					<li class="active"><a href="/marketing">运营工具</a></li>
 				</ul>
 			</nav>
 		</div>
@@ -37,35 +35,31 @@
 			<div class="accordion active" data-route="ads/new/">
 				<h2 class="accordion-heading">卖场管理</h2>
 				<ul class="nav">
-					<li><a href="/" data-route="sale/new/">新建卖场</a></li>
-					<li><a href="#" data-route="sale/list/">卖场列表</a></li>
-					<li><a href="#" data-route="sale/uploadFile/">图片上传</a></li>
+					<li><a href="/marketing" data-route="sale/new/">新建卖场</a></li>
+					<li><a href="/marketing" data-route="sale/list/">卖场列表</a></li>
+					<li><a href="/marketing" data-route="sale/uploadFile/">图片上传</a></li>
 				</ul>
 			</div>
 		</div>
 		<div class="col-main">
 			<ul class="breadcrumb" id="breadcrumb" style="display: block;">
-				<li>
-				<a href="/">运营工具</a>
-				</li>
-				<li class="active">卖场管理
-				</li>
+				<li><a href="/marketing">运营工具</a></li>
+				<li class="active">卖场管理</li>
 			</ul>
 			<!-- form start -->
 			<div id="form">
-				<form action="/publish" method="post" class="well " role="form" target="_blank">
+				<form id="publishForm" action="/publish" method="post" class="well " role="form" target="_blank">
 					<div class="form-horizontal form-inline">
 						<div class="form-group file-group">
 							<div class="input-group">
-								<input type="text" name="act_id" class="form-control" placeholder="商品包ID"> 
+								<input type="text" required="required" id="act_id" name="act_id" class="form-control" placeholder="商品包ID"> 
 								<span class="input-group-btn">
 									<a href="#" class="btn btn-primary" id="">查看</a>
 								</span>
 							</div>
 						</div>
 						<div class="form-group">
-							<select class="form-control" id="selectField2_5" name="templateId" data-pid="">
-								<option value="-1">活动模板...</option>
+							<select id="templateId" class="form-control" id="selectField2_5" name="templateId" data-pid="">
 								<option value="001">海外商家同步</option>
 							</select>
 						</div>
@@ -75,20 +69,32 @@
 					</div>
 					<div class="form-group">
 						<label for="page_css" class="label label-primary">自定义样式</label>
-						<textarea name="page_css" id="page_css" rows="15" class="form-control">
-						</textarea>
+						<textarea name="page_css" id="page_css" rows="15" class="form-control"></textarea>
+						
 					</div>
 					<div class="form-group">
 						<label for="page_js" class="label label-primary">自定义JS</label>
-						<textarea name="page_js" id="page_js" rows="15" class="form-control">
-						</textarea>
+						<textarea name="page_js" id="page_js" rows="15" class="form-control"></textarea>
+						
 					</div>
 				</form>
 			</div>
 			<!-- form end -->
 		</div>
 	</div>
+	<script src="http://marketing.hai0.com/assets/js/components/jquery/jquery.min.js"></script>
+	<script>
+		$(document).ready(function() {
+			$("#publishForm").submit(function(){
+				var act_id = $("#act_id").val();
+				var re = /^\d*$/;
+				if (act_id.match(re) == null){
+					alert("请检查商品包ID是否正确！");
+					return false;
+				}
+			});
+		});
+	</script>
 	<!-- contianer end -->
-	<div id="ui-datepicker-div" class="ui-datepicker ui-widget ui-widget-content ui-helper-clearfix ui-corner-all"></div>
 </body>
 </html>

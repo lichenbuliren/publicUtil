@@ -3,7 +3,7 @@
  * @author Heaven
  * @date 2014-09-03
  */
-
+var http = require("http");
 var crypto = require('crypto');
 var util = require('util');
 var path = require("path");
@@ -13,6 +13,21 @@ var config = require('../models/config.js');
 var Sftp = require('./sftp.js');
 
 var helper = {
+	//http get请求
+	doGet: function(url, callback){
+		var data = [];
+		http.get(url,function(res){
+			res.setEncoding("utf8");
+			res.on("data",function(chunk){
+				data.push(chunk);
+			}).on("end",function(){
+				return callback(null,data.join(''));
+			});
+		}).on("error",function(err){
+			console.log("err============" + err);
+			return callback(err);
+		});
+	},
 	//sftp文件上传
 	sftpFastPut : function (fileName,localFilePath,remoteFilePath,callback) {
 		var sftp = new Sftp(config.FTP_HOST,22,config.FTP_USER,config.FTP_PASS);

@@ -7,7 +7,6 @@ var util = require('util');
 var path = require("path");
 var http = require("http");
 var fs = require('fs'); //文件操作模块
-var Connection = require('ssh2'); //ssh2模块
 var querystring = require('querystring');
 //日期工具类
 var commonUtil = require("../models/commonUtil.js");
@@ -20,7 +19,7 @@ var Active = require('../models/active.js');
 var helper = require('../models/helper.js');
 
 module.exports = function(app) {
-	app.get('/', function(req, res) {
+	app.get('/marketing', function(req, res) {
 		res.render('index', {
 			title: '管理平台-淘海科技',
 		});
@@ -29,8 +28,8 @@ module.exports = function(app) {
 	//发布活动
 	app.post("/publish",function(req,res){
 		var act = {
-			act_id : req.body.act_id,
-			templateId : req.body.templateId,
+			act_id : commonUtil.trim(req.body.act_id),
+			templateId : commonUtil.trim(req.body.templateId),
 			page_css : commonUtil.trim(req.body.page_css),
 			page_js : commonUtil.trim(req.body.page_js)
 		}
@@ -38,27 +37,37 @@ module.exports = function(app) {
 		//var getUrl = "http://marketing.hai0.com/api/v1/marketing_active.get_active_by_id?id=124";
 		var api_url = "http://" + config.API_HOST + config.API_PATH + "?id=" + act.act_id;
 		//发送get请求
-		doGet(api_url,function(err,data){
+		helper.doGet(api_url,function(err,data){
 			if(err){
 				console.log(err);
 				return;
 			}
+
 			data = JSON.parse(data).data[0];
 			//给页面返回自定义css与js样式脚本
+			if(!data) {
+				res.send(500,'数据异常！(请检查活动商品包ID是否有效)');
+				return false;
+			};
 			data.page_css = act.page_css;
-			data.page_js = act.page_js;
+			console.log("act.page_css================" + act.page_css);
+			data.page_js = act.page_js || "";
 			//设置活动标题
 			act.title = data.active_name;
-			res.render(act.templateId,{
+			
+			//渲染模板数据
+			res.render('template/' + act.templateId,{
 				data: data
 			},function(err,html){
 				if(err){
 					console.log("err==============" + err);
-					res.send(500,err);
+					return res.send(500,err);
 				}
+
 				//生成活动名称
 				var fileName = helper.generalActName(act.act_id) + ".html",
 					localFilePath = path.join(path.dirname(__dirname),'publish',fileName);
+
 				//保存活动页面到本地路径
 				fs.writeFile(localFilePath,html,function(err){
 					if(err) throw err;
@@ -82,6 +91,7 @@ module.exports = function(app) {
 								console.log(err);
 								return res.redirect('/');
 							}
+							console.log(act.page_url);
 							console.log('数据保存成功');
 							res.redirect(act.page_url);
 						});
@@ -90,22 +100,6 @@ module.exports = function(app) {
 			});
 		});
 	});
-
-	//发送http get请求
-	function doGet(url,callback){
-		var data = [];
-		http.get(url,function(res){
-			res.setEncoding("utf8");
-			res.on("data",function(chunk){
-				data.push(chunk);
-			}).on("end",function(){
-				return callback(null,data.join(''));
-			});
-		}).on("error",function(e){
-			console.log("err============" + e.message);
-			return callback(e.message);
-		});
-	}
 
 	app.get('/test', function(req, res) {
 		var serverResponse = res;

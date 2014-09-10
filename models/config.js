@@ -14,16 +14,16 @@ var Config = {
 	CLOUD_PWD: 'taohai@2013',
 
 	//ftp地址信息
-	FTP_HOST: "203.195.159.158",
-	FTP_USER: "samgui",
-	FTP_PASS: "tao1314521hai",
-	FTP_PATH: "/var/www/act.hai360.com",
+	FTP_HOST: "2X3.1X5.1X9.1X8",
+	FTP_USER: "XXXX",
+	FTP_PASS: "XXXXX",
+	FTP_PATH: "/var/www/act.XXXX.com",
 
 	//接口信息
-	API_HOST: "marketing.hai0.com",
+	API_HOST: "marketing.XXX.com",
 	API_PATH: "/api/v1/marketing_active.get_active_by_id",
 
 	//活动页面访问路由
-	ACTIVE_HOST: "http://newact.hai360.com/"
+	ACTIVE_HOST: "http://newact.XXX.com/"
 }
 module.exports = Config;
